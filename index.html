@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026™ — 球员数据</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b0b1a;--surface:#1a1a2e;--text:#f0f0f0;--text-muted:#8888aa;--accent:#00d4ff;--gold:#ffd700;--green:#4caf50;--red:#e74c3c;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.4)}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+a{color:var(--accent);text-decoration:none}
+.hero{text-align:center;padding:2.5rem 1rem 1rem;background:linear-gradient(180deg,#0f1a3a 0%,var(--bg) 100%)}
+.hero h1{font-size:clamp(1.6rem,4vw,2.8rem);font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .sub{color:var(--text-muted);margin-top:.3rem;font-size:clamp(.85rem,2vw,1.05rem)}
+.hero .source{color:var(--accent);font-size:.8rem;margin-top:.4rem}
+.hero .live-dot{display:inline-block;width:8px;height:8px;background:#4caf50;border-radius:50%;margin-right:6px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.lang-toggle{position:fixed;top:1rem;right:1rem;z-index:100;display:flex;background:var(--surface);border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+.lang-btn{padding:.4rem .8rem;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;font-weight:600;transition:all .2s}
+.lang-btn.active{background:var(--accent);color:#000}
+
+/* Tab Nav */
+.tab-nav{max-width:1200px;margin:1rem auto 0;padding:0 1rem;display:flex;gap:.5rem}
+.tab-btn{padding:.6rem 1.2rem;border:1px solid #333;border-radius:var(--radius) var(--radius) 0 0;background:transparent;color:var(--text-muted);cursor:pointer;font-size:.9rem;font-weight:600;transition:all .2s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{background:var(--surface);color:var(--accent);border-bottom-color:var(--surface)}
+.tab-content{display:none;max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
+.tab-content.active{display:block}
+
+.stats-bar{margin:0 auto 1.5rem;display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+.stats-bar .stat-item{background:var(--surface);padding:.6rem 1rem;border-radius:var(--radius);text-align:center;min-width:100px}
+.stats-bar .stat-val{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.stats-bar .stat-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase}
+.controls{margin:0 auto 1.5rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.search-box{flex:1 1 220px;padding:.5rem .8rem;border:1px solid #333;border-radius:var(--radius);background:#12122a;color:var(--text);font-size:.9rem;outline:none}
+.search-box:focus{border-color:var(--accent)}
+.filter-group{display:flex;gap:.3rem;flex-wrap:wrap}
+.filter-btn{padding:.4rem .8rem;border:1px solid #333;border-radius:var(--radius);background:transparent;color:var(--text-muted);cursor:pointer;font-size:.8rem;transition:all .2s}
+.filter-btn:hover{border-color:#555;color:var(--text)}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
+
+/* Card Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.25rem}
+.card{position:relative;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,212,255,.15)}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--card-accent,var(--accent));z-index:2}
+.player-image-wrap{position:relative;width:100%;height:200px;overflow:hidden;background:linear-gradient(135deg,var(--team-color,#1a1a2e) 0%,#0a0a15 100%)}
+.player-photo{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:180px;width:auto;object-fit:contain;opacity:.6;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));z-index:1;transition:opacity .3s,transform .3s}
+.card:hover .player-photo{opacity:.8;transform:translateX(-50%) scale(1.05)}
+.player-silhouette{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:140px;height:180px;opacity:.15;z-index:0}
+.player-silhouette svg{width:100%;height:100%;fill:currentColor}
+.player-number-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7rem;font-weight:900;color:rgba(255,255,255,.06);line-height:1;z-index:0}
+.card-flag{position:absolute;top:10px;right:10px;font-size:1.4rem;z-index:3;background:rgba(0,0,0,.5);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.rank-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.7);color:var(--gold);font-weight:700;font-size:.7rem;padding:.2rem .45rem;border-radius:20px;z-index:3}
+.card-body{padding:.7rem 1rem .3rem;position:relative;z-index:1}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.15rem}
+.player-name{font-size:1rem;font-weight:700;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.player-team{font-size:.75rem;color:var(--text-muted);margin-top:1px}
+.player-meta{font-size:.65rem;color:var(--text-muted)}
+.goals-badge{display:inline-flex;align-items:center;gap:3px;padding:.2rem .5rem;border-radius:20px;font-size:.7rem;font-weight:700;background:rgba(231,76,60,.2);color:var(--red)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;padding:.5rem 1rem;border-top:1px solid rgba(255,255,255,.06)}
+.stat{text-align:center}
+.stat-val{font-size:.95rem;font-weight:700}
+.stat-label{font-size:.55rem;color:var(--text-muted);text-transform:uppercase}
+
+/* Group Tables */
+.group-section{margin-bottom:2rem}
+.group-title{font-size:1.1rem;font-weight:700;color:var(--accent);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.group-title .flag{font-size:1.2rem}
+.group-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.group-table th{background:#12122a;padding:.6rem .8rem;text-align:left;font-size:.7rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:.05em}
+.group-table td{padding:.5rem .8rem;border-top:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.group-table tr:hover{background:rgba(255,255,255,.03)}
+.group-table .team-cell{display:flex;align-items:center;gap:.5rem;font-weight:600}
+.group-table .team-flag{font-size:1.1rem}
+.group-table .pts{font-weight:700;color:var(--accent);font-size:1rem}
+.group-table .rank-cell{color:var(--text-muted);font-weight:600;width:30px}
+.group-table .gd-pos{color:var(--green)}
+.group-table .gd-neg{color:var(--red)}
+
+/* FIFA Ranking */
+.ranking-badge{display:inline-flex;align-items:center;gap:3px;padding:.15rem .4rem;border-radius:10px;font-size:.65rem;font-weight:600}
+.ranking-top10{background:rgba(255,215,0,.15);color:var(--gold)}
+.ranking-top20{background:rgba(0,212,255,.1);color:var(--accent)}
+.ranking-other{background:rgba(136,136,170,.1);color:var(--text-muted)}
+
+.skeleton-card{background:var(--surface);border-radius:var(--radius);min-height:300px}
+.skel{background:linear-gradient(90deg,#1e1e3a 25%,#2a2a4a 50%,#1e1e3a 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.message{text-align:center;padding:3rem 1rem;color:var(--text-muted)}
+.message .icon{font-size:3rem;margin-bottom:1rem}
+.footer{text-align:center;padding:1.5rem 1rem;color:var(--text-muted);font-size:.75rem;border-top:1px solid #1a1a2e}
+.footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="lang-toggle">
+  <button class="lang-btn active" data-lang="zh" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+</div>
+<header class="hero">
+  <h1>FIFA World Cup 2026™</h1>
+  <p class="sub" id="subtitle">射手榜</p>
+  <p class="source" id="source-info"><span class="live-dot"></span>正在加载数据...</p>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('players')" data-tab="players" data-i18n="tab_players">⚽ 球员射手榜</button>
+  <button class="tab-btn" onclick="switchTab('groups')" data-tab="groups" data-i18n="tab_groups">📊 小组积分榜</button>
+</div>
+
+<!-- Tab: Players -->
+<div class="tab-content active" id="tab-players">
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-item"><div class="stat-val" id="stat-matches">-</div><div class="stat-label" data-i18n="finished_matches">已完成</div></div>
+    <div class="stat-item"><div class="stat-val" id="stat-total">104</div><div class="stat-label" data-i18n="total_matches">总比赛</div></div>
+    <div class="stat-item"><div class="stat-val" id="stat-goals">-</div><div class="stat-label" data-i18n="total_goals">总进球</div></div>
+    <div class="stat-item"><div class="stat-val" id="stat-scorers">-</div><div class="stat-label" data-i18n="goal_scorers">进球球员</div></div>
+  </div>
+  <div class="controls">
+    <input class="search-box" type="text" id="search" placeholder="搜索球员或国家…">
+    <div class="filter-group" id="team-filters"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- Tab: Groups -->
+<div class="tab-content" id="tab-groups">
+  <div id="groups-container"></div>
+</div>
+
+<footer class="footer" id="footer">
+  数据来源: <a href="https://worldcup26.ir" target="_blank">World Cup 2026 API</a> · 
+  图片: <a href="https://www.thesportsdb.com" target="_blank">TheSportsDB</a> · 
+  每5分钟自动更新
+</footer>
+
+<svg style="display:none"><defs>
+  <symbol id="silhouette-player" viewBox="0 0 100 140">
+    <circle cx="50" cy="22" r="16"/>
+    <path d="M50 38 C30 38 18 55 18 75 L18 95 C18 100 22 105 28 105 L38 105 L38 130 C38 135 42 140 48 140 L52 140 C58 140 62 135 62 130 L62 105 L72 105 C78 105 82 100 82 95 L82 75 C82 55 70 38 50 38Z"/>
+  </symbol>
+</defs></svg>
+
+<script>
+let currentLang = 'zh';
+
+const I18N = {
+  zh: {
+    subtitle:'射手榜',tab_players:'⚽ 球员射手榜',tab_groups:'📊 小组积分榜',
+    search_placeholder:'搜索球员或国家…',finished_matches:'已完成',total_matches:'总比赛',
+    total_goals:'总进球',goal_scorers:'进球球员',goals:'进球',penalties:'点球',open_play:'运动战',
+    pen_label:'含 {n} 粒点球',no_players:'没有找到球员',api_error:'API连接失败',
+    matches_done:'{cur}/{total} 场已完成',updated_at:'更新于 {time}',
+    footer_data:'数据来源',footer_img:'图片来源',footer_update:'每5分钟自动更新',
+    team_all:'全部',group:'小组',rank:'排名',team:'球队',mp:'赛',w:'胜',d:'平',l:'负',gf:'进球',ga:'失球',gd:'净胜',pts:'积分',
+    fifa_rank:'FIFA排名',
+  },
+  en: {
+    subtitle:'Top Scorers',tab_players:'⚽ Top Scorers',tab_groups:'📊 Group Standings',
+    search_placeholder:'Search player or country…',finished_matches:'FINISHED',total_matches:'TOTAL',
+    total_goals:'GOALS',goal_scorers:'SCORERS',goals:'Goals',penalties:'Pens',open_play:'Open Play',
+    pen_label:'incl. {n} pen.',no_players:'No players found',api_error:'API connection failed',
+    matches_done:'{cur}/{total} finished',updated_at:'Updated at {time}',
+    footer_data:'Data',footer_img:'Images',footer_update:'Auto-refresh every 5 min',
+    team_all:'All',group:'Group',rank:'Rank',team:'Team',mp:'MP',w:'W',d:'D',l:'L',gf:'GF',ga:'GA',gd:'GD',pts:'PTS',
+    fifa_rank:'FIFA Rank',
+  }
+};
+
+function t(key, vars={}) {
+  let s = I18N[currentLang][key] || key;
+  for (const [k,v] of Object.entries(vars)) s = s.replace(`{${k}}`, v);
+  return s;
+}
+
+const PLAYER_CN = {
+  "Lionel Messi":"莱昂内尔·梅西","Jonathan David":"乔纳森·戴维","K. Havertz":"凯·哈弗茨","Kai Havertz":"凯·哈弗茨",
+  "H. Kane":"哈里·凯恩","Harry Kane":"哈里·凯恩","F. Balogun":"福拉林·巴洛贡","Folarin Balogun":"福拉林·巴洛贡",
+  "Y.Ayari":"亚辛·阿亚里","Yasin Ayari":"亚辛·阿亚里","K. Mbappé":"基利安·姆巴佩","Kylian Mbappé":"基利安·姆巴佩","Kylian Mbappe":"基利安·姆巴佩",
+  "Aymen Hussein":"艾门·侯赛因","Erling Haaland":"埃尔林·哈兰德","Jvhan Mnzambi":"日万·姆恩赞比","Breel Embolo":"布雷尔·恩博洛",
+  "I.B. Hwang":"黄仁范","Hwang In-beom":"黄仁范","H.G. Oh":"吴贤揆","Oh Hyeon-gyu":"吴贤揆",
+  "L. Krejčí":"拉迪斯拉夫·克雷奇","Ladislav Krejci":"拉迪斯拉夫·克雷奇","C. Larin":"凯尔·拉林","Cyle Larin":"凯尔·拉林",
+  "Jovo Lukić":"约沃·卢基奇","Jovo Lukic":"约沃·卢基奇","G. Reyna":"乔瓦尼·雷纳","Giovanni Reyna":"乔瓦尼·雷纳",
+  "J. McGinn":"约翰·麦金","John McGinn":"约翰·麦金","V. Júnior":"维尼修斯","Vinicius Junior":"维尼修斯",
+  "I. Saibari":"伊斯梅尔·赛巴里","Ismael Saibari":"伊斯梅尔·赛巴里","B. Khoukhi":"布阿勒姆·胡赫","Boualem Khoukhi":"布阿勒姆·胡赫",
+  "A. Diallo":"阿马德·迪亚洛","Amad Diallo":"阿马德·迪亚洛","N. Schlotterbeck":"尼科·施洛特贝克","Nico Schlotterbeck":"尼科·施洛特贝克",
+  "J. Musiala":"贾马尔·穆西亚拉","Jamal Musiala":"贾马尔·穆西亚拉","N. Brown":"纳撒尼尔·布朗","Nathaniel Brown":"纳撒尼尔·布朗",
+  "D. Undav":"德尼兹·翁达夫","Deniz Undav":"德尼兹·翁达夫","D. Bobadilla":"达米安·博巴迪利亚","Damian Bobadilla":"达米安·博巴迪利亚",
+  "Maurício":"毛里西奥","Mauricio":"毛里西奥","L. Messi":"莱昂内尔·梅西","J. David":"乔纳森·戴维",
+  "E. Haaland":"埃尔林·哈兰德","B. Embolo":"布雷尔·恩博洛","A. Hussein":"艾门·侯赛因",
+  "J. Just":"伊莱贾·贾斯特","Elijah Just":"伊莱贾·贾斯特","P. Musa":"彼得·穆萨","Petar Musa":"彼得·穆萨",
+  "M. Baturina":"马丁·巴图里纳","Martin Baturina":"马丁·巴图里纳","M. Rashford":"马库斯·拉什福德","Marcus Rashford":"马库斯·拉什福德",
+  "J. Bellingham":"裘德·贝林厄姆","Jude Bellingham":"裘德·贝林厄姆","L. Díaz":"路易斯·迪亚斯","Luis Diaz":"路易斯·迪亚斯",
+  "J. Campaz":"哈米顿·坎帕斯","Jaminton Campaz":"哈米顿·坎帕斯","J. Quiñones":"胡利安·基尼奥内斯","Julian Quinones":"胡利安·基尼奥内斯",
+  "R. Jiménez":"劳尔·希门尼斯","Raul Jimenez":"劳尔·希门尼斯","M. Arnautovic":"马尔科·阿瑙托维奇","Marko Arnautovic":"马尔科·阿瑙托维奇",
+  "J. Neves":"若昂·内维斯","Joao Neves":"若昂·内维斯","Y. Wissa":"约安·维萨","Yoane Wissa":"约安·维萨",
+  "D. Muñoz":"丹尼尔·穆尼奥斯","Daniel Munoz":"丹尼尔·穆尼奥斯","M. Araújo":"马克西米利亚诺·阿劳霍","Maximiliano Araujo":"马克西米利亚诺·阿劳霍",
+  "R. Rezaeian":"拉明·雷扎伊安","Ramin Rezaeian":"拉明·雷扎伊安","M. Mohebi":"穆罕默德·莫赫比","Mohammed Mohebi":"穆罕默德·莫赫比",
+  "V. van Dijk":"维吉尔·范迪克","Virgil van Dijk":"维吉尔·范迪克","C. Summerville":"塞伦西奥·萨默维尔",
+  "D. Kamada":"镰田大地","Daichi Kamada":"镰田大地","K. Nakamuro":"中村敬斗","Keito Nakamura":"中村敬斗",
+  "A. Isak":"亚历山大·伊萨克","Alexander Isak":"亚历山大·伊萨克","V. Gyökeres":"维克托·焦克雷斯","Victor Gyokeres":"维克托·焦克雷斯",
+  "M. Svanberg":"马蒂亚斯·斯万贝里","Mattias Svanberg":"马蒂亚斯·斯万贝里","T. Kroos":"托尼·克罗斯","Toni Kroos":"托尼·克罗斯",
+  "F. Wirtz":"弗洛里安·维尔茨","Florian Wirtz":"弗洛里安·维尔茨","N. Fullkrug":"尼科拉斯·菲尔克鲁格",
+};
+function playerName(n){ return currentLang==='zh' ? (PLAYER_CN[n]||n) : n; }
+
+const TEAM_CN = {
+  'Argentina':'阿根廷','Australia':'澳大利亚','Belgium':'比利时','Bosnia & Herzegovina':'波黑',
+  'Bosnia and Herzegovina':'波黑','Brazil':'巴西','Canada':'加拿大','Colombia':'哥伦比亚',
+  'Croatia':'克罗地亚','Czech Republic':'捷克','Ecuador':'厄瓜多尔','Egypt':'埃及','England':'英格兰',
+  'France':'法国','Germany':'德国','Ghana':'加纳','Iran':'伊朗','Ivory Coast':'科特迪瓦',
+  'Japan':'日本','Mexico':'墨西哥','Morocco':'摩洛哥','Netherlands':'荷兰','New Zealand':'新西兰',
+  'Norway':'挪威','Panama':'巴拿马','Paraguay':'巴拉圭','Portugal':'葡萄牙','Qatar':'卡塔尔',
+  'Scotland':'苏格兰','Senegal':'塞内加尔','South Korea':'韩国','Spain':'西班牙','Sweden':'瑞典',
+  'Switzerland':'瑞士','Tunisia':'突尼斯','Turkey':'土耳其','USA':'美国','Uruguay':'乌拉圭',
+  'South Africa':'南非','Saudi Arabia':'沙特','Iraq':'伊拉克','Jordan':'约旦','Algeria':'阿尔及利亚',
+  'Austria':'奥地利','Curaçao':'库拉索','DR Congo':'刚果(金)','Democratic Republic of the Congo':'刚果(金)',
+  'Cape Verde':'佛得角','Haiti':'海地','Uzbekistan':'乌兹别克斯坦'
+};
+function teamName(en){ return currentLang==='zh' ? (TEAM_CN[en]||en) : en; }
+
+/* FIFA Rankings (June 2026 approximate) */
+const FIFA_RANK = {
+  'Argentina':1,'France':2,'England':3,'Brazil':4,'Spain':5,'Netherlands':6,'Portugal':7,
+  'Belgium':8,'Germany':9,'Colombia':10,'Japan':11,'Uruguay':12,'Croatia':13,'Morocco':14,
+  'USA':15,'Mexico':16,'Senegal':17,'Ecuador':18,'Austria':19,'Switzerland':20,
+  'Egypt':21,'Australia':22,'South Korea':23,'Iran':24,'Ivory Coast':25,'Paraguay':26,
+  'Norway':27,'Sweden':28,'Scotland':29,'Panama':30,'Saudi Arabia':31,'Tunisia':32,
+  'Turkey':33,'Ghana':34,'Algeria':35,'New Zealand':36,'Qatar':37,'Canada':38,
+  'Iraq':39,'Jordan':40,'South Africa':41,'Czech Republic':42,'Bosnia & Herzegovina':43,
+  'Bosnia and Herzegovina':43,'DR Congo':44,'Democratic Republic of the Congo':44,
+  'Cape Verde':45,'Haiti':46,'Uzbekistan':47,'Curaçao':48
+};
+
+const TEAM_FLAGS = {
+  'Argentina':'🇦🇷','Australia':'🇦🇺','Belgium':'🇧🇪','Bosnia & Herzegovina':'🇧🇦',
+  'Bosnia and Herzegovina':'🇧🇦','Brazil':'🇧🇷','Canada':'🇨🇦','Colombia':'🇨🇴',
+  'Croatia':'🇭🇷','Czech Republic':'🇨🇿','Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'France':'🇫🇷','Germany':'🇩🇪','Ghana':'🇬🇭','Iran':'🇮🇷','Ivory Coast':'🇨🇮',
+  'Japan':'🇯🇵','Mexico':'🇲🇽','Morocco':'🇲🇦','Netherlands':'🇳🇱','New Zealand':'🇳🇿',
+  'Norway':'🇳🇴','Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹','Qatar':'🇶🇦',
+  'Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪',
+  'Switzerland':'🇨🇭','Tunisia':'🇹🇳','Turkey':'🇹🇷','USA':'🇺🇸','Uruguay':'🇺🇾',
+  'South Africa':'🇿🇦','Saudi Arabia':'🇸🇦','Iraq':'🇮🇶','Jordan':'🇯🇴','Algeria':'🇩🇿',
+  'Austria':'🇦🇹','Curaçao':'🇨🇼','DR Congo':'🇨🇩','Democratic Republic of the Congo':'🇨🇩',
+  'Cape Verde':'🇨🇻','Haiti':'🇭🇹','Uzbekistan':'🇺🇿'
+};
+const TEAM_COLORS = {
+  'Argentina':'#75aadb','Brazil':'#009c3b','France':'#002395','England':'#cf081f',
+  'Germany':'#4a4a4a','Spain':'#c60b1e','Portugal':'#006600','Netherlands':'#ff6600',
+  'USA':'#3c3b6e','Mexico':'#006847','Japan':'#bc002d','Morocco':'#c1272d',
+  'Norway':'#ba0c2f','Sweden':'#006aa7','Austria':'#ed2939','Australia':'#00008b',
+  'Canada':'#ff0000','Colombia':'#fcd116','Czech Republic':'#11457e','Egypt':'#ce1126',
+  'Jordan':'#007a3d','Paraguay':'#d52b1e','Qatar':'#8d1b3d','South Korea':'#003478',
+  'Switzerland':'#ff0000','DR Congo':'#007fff','Bosnia & Herzegovina':'#002395',
+  'Bosnia and Herzegovina':'#002395','Ivory Coast':'#f77f00','Iran':'#239f40',
+  'Saudi Arabia':'#006c35','Scotland':'#003078','Croatia':'#ff0000','Ghana':'#006b3f',
+  'New Zealand':'#00247d','Panama':'#c8102e','Senegal':'#00853f','Tunisia':'#e70013',
+  'Turkey':'#e30a17','Uruguay':'#5bc2e7','Iraq':'#ce1126','South Africa':'#007749',
+  'Algeria':'#006233','Curaçao':'#002b7f','Cape Verde':'#003893','Haiti':'#00209f',
+  'Uzbekistan':'#1eb53a','Senegal':'#00853f'
+};
+
+const NAME_MAP={"K. Havertz":"Kai Havertz","H. Kane":"Harry Kane","F. Balogun":"Folarin Balogun","Y.Ayari":"Yasin Ayari","K. Mbappé":"Kylian Mbappe","I.B. Hwang":"Hwang In-beom","H.G. Oh":"Oh Hyeon-gyu","L. Krejčí":"Ladislav Krejci","C. Larin":"Cyle Larin","Jovo Lukić":"Jovo Lukic","G. Reyna":"Giovanni Reyna","J. McGinn":"John McGinn","V. Júnior":"Vinicius Junior","I. Saibari":"Ismael Saibari","B. Khoukhi":"Boualem Khoukhi","A. Diallo":"Amad Diallo","N. Schlotterbeck":"Nico Schlotterbeck","J. Musiala":"Jamal Musiala","N. Brown":"Nathaniel Brown","D. Undav":"Deniz Undav","D. Bobadilla":"Damian Bobadilla","Maurício":"Mauricio","L. Messi":"Lionel Messi","J. David":"Jonathan David","E. Haaland":"Erling Haaland","B. Embolo":"Breel Embolo","A. Hussein":"Aymen Hussein","J. Just":"Elijah Just","P. Musa":"Petar Musa","M. Baturina":"Martin Baturina","M. Rashford":"Marcus Rashford","J. Bellingham":"Jude Bellingham","L. Díaz":"Luis Diaz","J. Campaz":"Jaminton Campaz","J. Quiñones":"Julian Quinones","R. Jiménez":"Raul Jimenez","M. Arnautovic":"Marko Arnautovic","J. Neves":"Joao Neves","Y. Wissa":"Yoane Wissa","D. Muñoz":"Daniel Munoz","M. Araújo":"Maximiliano Araujo","R. Rezaeian":"Ramin Rezaeian","M. Mohebi":"Mohammed Mohebi","V. van Dijk":"Virgil van Dijk","C. Summerville":"Cyrnsio Summerville","D. Kamada":"Daichi Kamada","K. Nakamuro":"Keito Nakamura","A. Isak":"Alexander Isak","V. Gyökeres":"Victor Gyokeres","M. Svanberg":"Mattias Svanberg","T. Kroos":"Toni Kroos","F. Wirtz":"Florian Wirtz","N. Fullkrug":"Niclas Fullkrug"};
+
+const WC_API="https://worldcup26.ir/get/games";
+const GROUPS_API="https://worldcup26.ir/get/groups";
+const TEAMS_API="https://worldcup26.ir/get/teams";
+const THUMBS_API="https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=";
+const REFRESH_INTERVAL=5*60*1000;
+const imageCache={};
+
+function parseScorers(s){if(!s||s==='null')return[];const r=[],c=s.replace(/[{}]/g,''),rx=/"([^"]+)"/g;let m;while((m=rx.exec(c))!==null){const sc=m[1],ip=sc.toLowerCase().includes('(p)'),io=sc.toLowerCase().includes('(og)');let n=sc.replace(/\s*\d+.*$/,'').replace(/\s*\(p\)\s*/gi,'').replace(/\s*\(og\)\s*/gi,'').trim();if(n&&!io)r.push({name:n,isPenalty:ip})}return r}
+
+async function fetchPlayerImage(name){if(imageCache[name]!==undefined)return imageCache[name];try{const sn=NAME_MAP[name]||name;const r=await fetch(`${THUMBS_API}${encodeURIComponent(sn)}`);if(!r.ok){imageCache[name]=null;return null}const d=await r.json();const p=d.player||[];if(p.length>0){const u=p[0].strCutout||p[0].strThumb||null;imageCache[name]=u;return u}const pts=sn.split(' ');if(pts.length>1){const r2=await fetch(`${THUMBS_API}${encodeURIComponent(pts[pts.length-1])}`);if(r2.ok){const d2=await r2.json();if(d2.player?.length>0){const u=d2.player[0].strCutout||d2.player[0].strThumb||null;imageCache[name]=u;return u}}}imageCache[name]=null;return null}catch{imageCache[name]=null;return null}}
+
+let allPlayers=[],activeTeam="ALL",searchTerm="",groupsData=[],teamsMap={};
+
+async function fetchAll(){
+  const[gamesRes,groupsRes,teamsRes]=await Promise.all([
+    fetch(WC_API).then(r=>r.json()),
+    fetch(GROUPS_API).then(r=>r.json()),
+    fetch(TEAMS_API).then(r=>r.json())
+  ]);
+  const games=gamesRes.games||[];
+  groupsData=groupsRes.groups||[];
+  const teams=Array.isArray(teamsRes)?teamsRes:(teamsRes.teams||[]);
+  teamsMap={};teams.forEach(t=>{teamsMap[t.id]={name:t.name_en,group:t.groups,code:t.fifa_code,flag:t.flag}});
+  
+  const players={};let totalGoals=0,finishedCount=0;
+  for(const g of games){
+    const h=g.home_team_name_en||'',a=g.away_team_name_en||'';
+    if((g.finished||'').toUpperCase()==='TRUE')finishedCount++;
+    for(const s of parseScorers(g.home_scorers)){totalGoals++;if(!players[s.name])players[s.name]={name:s.name,team:h,goals:0,penalties:0};players[s.name].goals++;if(s.isPenalty)players[s.name].penalties++}
+    for(const s of parseScorers(g.away_scorers)){totalGoals++;if(!players[s.name])players[s.name]={name:s.name,team:a,goals:0,penalties:0};players[s.name].goals++;if(s.isPenalty)players[s.name].penalties++}
+  }
+  const pl=Object.values(players).sort((a,b)=>b.goals-a.goals||b.penalties-a.penalties);
+  return{players:pl,stats:{totalMatches:games.length,finishedMatches:finishedCount,totalGoals,totalScorers:pl.length}};
+}
+
+function renderCards(list){
+  const g=document.getElementById("grid");
+  if(!list.length){g.innerHTML=`<div class="message"><div class="icon">⚽</div><h3>${t('no_players')}</h3></div>`;return}
+  g.innerHTML=list.map((p,i)=>{
+    const tc=TEAM_COLORS[p.team]||'#1a1a2e',flag=TEAM_FLAGS[p.team]||'⚽',img=imageCache[p.name];
+    const pen=p.penalties>0?`<div class="player-meta">${t('pen_label',{n:p.penalties})}</div>`:'';
+    return`<article class="card" style="--card-accent:${tc};--team-color:${tc}">
+      <div class="player-image-wrap" style="--team-color:${tc}">
+        <div class="player-number-bg">${p.goals}</div>
+        <div class="player-silhouette" style="color:${tc}"><svg><use href="#silhouette-player"/></svg></div>
+        ${img?`<img class="player-photo" src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.display='none'">`:''}
+        <div class="rank-badge">#${i+1}</div><div class="card-flag">${flag}</div>
+      </div>
+      <div class="card-body"><div class="card-top"><div>
+        <div class="player-name">${playerName(p.name)}</div>
+        <div class="player-team">${teamName(p.team)} ${FIFA_RANK[p.team]?`<span class="ranking-badge ${FIFA_RANK[p.team]<=10?'ranking-top10':FIFA_RANK[p.team]<=20?'ranking-top20':'ranking-other'}">#${FIFA_RANK[p.team]}</span>`:''}</div>
+        ${pen}</div><span class="goals-badge">⚽ ${p.goals}</span></div></div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val">${p.goals}</div><div class="stat-label">⚽ ${t('goals')}</div></div>
+        <div class="stat"><div class="stat-val">${p.penalties}</div><div class="stat-label">🎯 ${t('penalties')}</div></div>
+        <div class="stat"><div class="stat-val">${p.goals-p.penalties}</div><div class="stat-label">⚡ ${t('open_play')}</div></div>
+      </div></article>`;
+  }).join("");
+}
+
+function renderGroups(){
+  const c=document.getElementById("groups-container");
+  const sortedGroups=groupsData.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  c.innerHTML=sortedGroups.map(g=>{
+    const teams=g.teams.slice().sort((a,b)=>{const ptsDiff=parseInt(b.pts)-parseInt(a.pts);if(ptsDiff!==0)return ptsDiff;const gdDiff=(parseInt(b.gf)-parseInt(b.ga))-(parseInt(a.gf)-parseInt(a.ga));if(gdDiff!==0)return gdDiff;return parseInt(b.gf)-parseInt(a.gf)});
+    return`<div class="group-section">
+      <div class="group-title"><span class="flag">🏆</span> ${t('group')} ${g.name}</div>
+      <table class="group-table"><thead><tr>
+        <th>${t('rank')}</th><th>${t('team')}</th><th>${FIFA_RANK[teamsMap[teams[0]?.team_id]?.name]?'':''}</th>
+        <th>${t('mp')}</th><th>${t('w')}</th><th>${t('d')}</th><th>${t('l')}</th>
+        <th>${t('gf')}</th><th>${t('ga')}</th><th>${t('gd')}</th><th>${t('pts')}</th>
+      </tr></thead><tbody>${teams.map((t2,i)=>{
+        const info=teamsMap[t2.team_id]||{};
+        const name=teamName(info.name||'');
+        const flag=TEAM_FLAGS[info.name]||'🏳️';
+        const rank=FIFA_RANK[info.name];
+        const gd=parseInt(t2.gf)-parseInt(t2.ga);
+        const gdStr=gd>0?`+${gd}`:gd===0?'0':`${gd}`;
+        const gdClass=gd>0?'gd-pos':gd<0?'gd-neg':'';
+        const rankBadge=rank?`<span class="ranking-badge ${rank<=10?'ranking-top10':rank<=20?'ranking-top20':'ranking-other'}" style="margin-left:.3rem;font-size:.6rem">#${rank}</span>`:'';
+        return`<tr>
+          <td class="rank-cell">${i+1}</td>
+          <td><div class="team-cell"><span class="team-flag">${flag}</span>${name}${rankBadge}</div></td>
+          <td class="pts">${t2.pts}</td>
+          <td>${t2.mp}</td><td>${t2.w}</td><td>${t2.d}</td><td>${t2.l}</td>
+          <td>${t2.gf}</td><td>${t2.ga}</td>
+          <td class="${gdClass}">${gdStr}</td>
+          <td class="pts">${t2.pts}</td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`;
+  }).join('');
+}
+
+function renderStats(s){
+  document.getElementById('stat-matches').textContent=s.finishedMatches;
+  document.getElementById('stat-goals').textContent=s.totalGoals;
+  document.getElementById('stat-scorers').textContent=s.totalScorers;
+}
+
+function renderTeamFilters(){
+  const teams=[...new Set(allPlayers.map(p=>p.team))].sort();
+  document.getElementById('team-filters').innerHTML=
+    `<button class="filter-btn active" data-team="ALL">${t('team_all')}</button>`+
+    teams.map(team=>`<button class="filter-btn" data-team="${team}">${TEAM_FLAGS[team]||''} ${teamName(team)}</button>`).join('');
+}
+
+function currentFiltered(){
+  let l=allPlayers;
+  if(activeTeam!=='ALL')l=l.filter(p=>p.team===activeTeam);
+  if(searchTerm){const q=searchTerm.toLowerCase();l=l.filter(p=>p.name.toLowerCase().includes(q)||p.team.toLowerCase().includes(q)||(TEAM_CN[p.team]||'').includes(q)||(PLAYER_CN[p.name]||'').includes(q))}
+  return l;
+}
+
+function setLang(lang){
+  currentLang=lang;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+  document.getElementById('search').placeholder=t('search_placeholder');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  document.getElementById('footer').innerHTML=`${t('footer_data')}: <a href="https://worldcup26.ir" target="_blank">World Cup 2026 API</a> · ${t('footer_img')}: <a href="https://www.thesportsdb.com" target="_blank">TheSportsDB</a> · ${t('footer_update')}`;
+  if(allPlayers.length){renderCards(currentFiltered());renderTeamFilters();renderGroups()}
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+document.getElementById("team-filters").addEventListener("click",e=>{
+  if(!e.target.matches(".filter-btn"))return;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  e.target.classList.add("active");activeTeam=e.target.dataset.team;renderCards(currentFiltered());
+});
+document.getElementById("search").addEventListener("input",e=>{searchTerm=e.target.value.trim();renderCards(currentFiltered())});
+
+let refreshTimer=null;
+async function loadData(){
+  try{
+    const{players,stats}=await fetchAll();
+    allPlayers=players;renderStats(stats);renderTeamFilters();
+    await Promise.all(players.slice(0,20).map(p=>fetchPlayerImage(p.name)));
+    renderCards(players);renderGroups();
+    const now=new Date().toLocaleTimeString(currentLang==='zh'?'zh-CN':'en-US');
+    document.getElementById('source-info').innerHTML=`<span class="live-dot"></span>${t('matches_done',{cur:stats.finishedMatches,total:stats.totalMatches})} · ${t('updated_at',{time:now})}`;
+    (async()=>{for(const p of players.slice(20))await fetchPlayerImage(p.name);renderCards(players)})();
+  }catch(err){document.getElementById('source-info').innerHTML=`<span style="color:var(--red)">⚠</span> ${t('api_error')}: ${err.message}`}
+}
+
+(async function(){await loadData();refreshTimer=setInterval(loadData,REFRESH_INTERVAL)})();
+</script>
+</body>
+</html>
