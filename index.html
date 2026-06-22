@@ -453,11 +453,10 @@ async function loadData(){
   try{
     const{players,stats}=await fetchAll();
     allPlayers=players;renderStats(stats);renderTeamFilters();
-    await Promise.all(players.slice(0,20).map(p=>fetchPlayerImage(p.name)));
     renderCards(players);renderGroups();renderSchedule();
     const now=new Date().toLocaleTimeString(currentLang==='zh'?'zh-CN':'en-US');
     document.getElementById('source-info').innerHTML=`<span class="live-dot"></span>${t('matches_done',{cur:stats.finishedMatches,total:stats.totalMatches})} · ${t('updated_at',{time:now})}`;
-    (async()=>{for(const p of players.slice(20))await fetchPlayerImage(p.name);renderCards(players)})();
+    (async()=>{for(const p of players)await fetchPlayerImage(p.name);renderCards(allPlayers)})();
   }catch(err){document.getElementById('source-info').innerHTML=`<span style="color:var(--red)">⚠</span> ${t('api_error')}: ${err.message}`}
 }
 
