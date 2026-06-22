@@ -132,7 +132,7 @@ a{color:var(--accent);text-decoration:none}
 <footer class="footer" id="footer">
   数据来源: <a href="https://worldcup26.ir" target="_blank">World Cup 2026 API</a> · 
   图片: <a href="https://www.thesportsdb.com" target="_blank">TheSportsDB</a> · 
-  每5分钟自动更新
+  每30分钟自动更新
 </footer>
 
 <svg style="display:none"><defs>
@@ -152,7 +152,7 @@ const I18N = {
     total_goals:'总进球',goal_scorers:'进球球员',goals:'进球',penalties:'点球',open_play:'运动战',
     pen_label:'含 {n} 粒点球',no_players:'没有找到球员',api_error:'API连接失败',
     matches_done:'{cur}/{total} 场已完成',updated_at:'更新于 {time}',
-    footer_data:'数据来源',footer_img:'图片来源',footer_update:'每5分钟自动更新',
+    footer_data:'数据来源',footer_img:'图片来源',footer_update:'每30分钟自动更新',
     team_all:'全部',group:'小组',rank:'排名',team:'球队',mp:'赛',w:'胜',d:'平',l:'负',gf:'进球',ga:'失球',gd:'净胜',pts:'积分',
     fifa_rank:'FIFA排名',
   },
@@ -162,7 +162,7 @@ const I18N = {
     total_goals:'GOALS',goal_scorers:'SCORERS',goals:'Goals',penalties:'Pens',open_play:'Open Play',
     pen_label:'incl. {n} pen.',no_players:'No players found',api_error:'API connection failed',
     matches_done:'{cur}/{total} finished',updated_at:'Updated at {time}',
-    footer_data:'Data',footer_img:'Images',footer_update:'Auto-refresh every 5 min',
+    footer_data:'Data',footer_img:'Images',footer_update:'Auto-refresh every 30 min',
     team_all:'All',group:'Group',rank:'Rank',team:'Team',mp:'MP',w:'W',d:'D',l:'L',gf:'GF',ga:'GA',gd:'GD',pts:'PTS',
     fifa_rank:'FIFA Rank',
   }
@@ -268,7 +268,7 @@ const WC_API="https://worldcup26.ir/get/games";
 const GROUPS_API="https://worldcup26.ir/get/groups";
 const TEAMS_API="https://worldcup26.ir/get/teams";
 const THUMBS_API="https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=";
-const REFRESH_INTERVAL=5*60*1000;
+const REFRESH_INTERVAL=30*60*1000;
 const imageCache={};
 
 function parseScorers(s){if(!s||s==='null')return[];const r=[],c=s.replace(/[{}]/g,''),rx=/"([^"]+)"/g;let m;while((m=rx.exec(c))!==null){const sc=m[1],ip=sc.toLowerCase().includes('(p)'),io=sc.toLowerCase().includes('(og)');let n=sc.replace(/\s*\d+.*$/,'').replace(/\s*\(p\)\s*/gi,'').replace(/\s*\(og\)\s*/gi,'').trim();if(n&&!io)r.push({name:n,isPenalty:ip})}return r}
