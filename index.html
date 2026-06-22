@@ -372,7 +372,12 @@ function renderSchedule(){
     const dateObj=new Date(year,month-1,day);
     const weekday=currentLang==='zh'?['周日','周一','周二','周三','周四','周五','周六'][dateObj.getDay()]:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dateObj.getDay()];
     const dateStr=currentLang==='zh'?`${year}年${month}月${day}日 ${weekday}`:`${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]} ${day}, ${year} (${weekday})`;
-    const matchCards=grouped[date].map(g=>{
+    const sortedGames=grouped[date].slice().sort((a,b)=>{
+      const aTime=toChinaTime(a.local_date,a.stadium_id);
+      const bTime=toChinaTime(b.local_date,b.stadium_id);
+      return aTime.localeCompare(bTime);
+    });
+    const matchCards=sortedGames.map(g=>{
       const isFinished=(g.finished||'').toUpperCase()==='TRUE';
       const isLive=(g.time_elapsed||'').toLowerCase()==='live';
       const statusClass=isFinished?'finished':isLive?'live':'upcoming';
