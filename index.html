@@ -361,7 +361,7 @@ function renderSchedule(){
 
   const sortedDates=Object.keys(grouped).sort((a,b)=>{
     if(scheduleFilter==='finished')return b.localeCompare(a);
-    if(scheduleFilter==='all')return b.localeCompare(a);
+    if(scheduleFilter==='all')return a.localeCompare(b);
     return a.localeCompare(b);
   });
   if(!sortedDates.length){fc.innerHTML=`<div class="message"><div class="icon">📅</div><h3>${currentLang==='zh'?'暂无比赛':'No matches'}</h3></div>`;return}
