@@ -202,6 +202,19 @@ function teamName(en){return currentLang==='zh'?(TEAM_CN[en]||en):en}
 const STADIUM_CN={'Estadio Azteca':'阿兹特克体育场','Estadio Akron':'阿克伦体育场','Estadio BBVA':'BBVA体育场','Mercedes-Benz Stadium':'梅赛德斯-奔驰球场','Gillette Stadium':'吉列体育场','AT&T Stadium':'AT&T体育场','NRG Stadium':'NRG体育场','Arrowhead Stadium':'箭头体育场','SoFi Stadium':'SoFi体育场','Hard Rock Stadium':'硬石体育场','MetLife Stadium':'大都会人寿体育场','Lincoln Financial Field':'林肯金融球场',"Levi's Stadium":'李维斯体育场','Lumen Field':'流明球场','BMO Field':'BMO球场','BC Place Stadium':'BC Place体育场'};
 function stadiumName(en){return currentLang==='zh'?(STADIUM_CN[en]||en):en}
 
+function toChinaTime(localDate){
+  if(!localDate)return'';
+  const[datePart,timePart]=localDate.split(' ');
+  if(!datePart||!timePart)return localDate;
+  const[mm,dd,yyyy]=datePart.split('/');
+  const[hh,min]=timePart.split(':');
+  const d=new Date(Date.UTC(parseInt(yyyy),parseInt(mm)-1,parseInt(dd),parseInt(hh),parseInt(min)));
+  d.setUTCHours(d.getUTCHours()+8);
+  const ch=d.getUTCMonth()+1;const cd=d.getUTCDate();const cy=d.getUTCFullYear();
+  const chh=String(d.getUTCHours()).padStart(2,'0');const cmm=String(d.getUTCMinutes()).padStart(2,'0');
+  return `${cy}-${String(ch).padStart(2,'0')}-${String(cd).padStart(2,'0')} ${chh}:${cmm}`;
+}
+
 const FIFA_RANK={'Argentina':1,'France':2,'England':3,'Brazil':4,'Spain':5,'Netherlands':6,'Portugal':7,'Belgium':8,'Germany':9,'Colombia':10,'Japan':11,'Uruguay':12,'Croatia':13,'Morocco':14,'USA':15,'Mexico':16,'Senegal':17,'Ecuador':18,'Austria':19,'Switzerland':20,'Egypt':21,'Australia':22,'South Korea':23,'Iran':24,'Ivory Coast':25,'Paraguay':26,'Norway':27,'Sweden':28,'Scotland':29,'Panama':30,'Saudi Arabia':31,'Tunisia':32,'Turkey':33,'Ghana':34,'Algeria':35,'New Zealand':36,'Qatar':37,'Canada':38,'Iraq':39,'Jordan':40,'South Africa':41,'Czech Republic':42,'Bosnia & Herzegovina':43,'Bosnia and Herzegovina':43,'DR Congo':44,'Democratic Republic of the Congo':44,'Cape Verde':45,'Haiti':46,'Uzbekistan':47,'Curaçao':48};
 const TEAM_FLAGS={'Argentina':'🇦🇷','Australia':'🇦🇺','Belgium':'🇧🇪','Bosnia & Herzegovina':'🇧🇦','Bosnia and Herzegovina':'🇧🇦','Brazil':'🇧🇷','Canada':'🇨🇦','Colombia':'🇨🇴','Croatia':'🇭🇷','Czech Republic':'🇨🇿','Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','France':'🇫🇷','Germany':'🇩🇪','Ghana':'🇬🇭','Iran':'🇮🇷','Ivory Coast':'🇨🇮','Japan':'🇯🇵','Mexico':'🇲🇽','Morocco':'🇲🇦','Netherlands':'🇳🇱','New Zealand':'🇳🇿','Norway':'🇳🇴','Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹','Qatar':'🇶🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭','Tunisia':'🇹🇳','Turkey':'🇹🇷','USA':'🇺🇸','Uruguay':'🇺🇾','South Africa':'🇿🇦','Saudi Arabia':'🇸🇦','Iraq':'🇮🇶','Jordan':'🇯🇴','Algeria':'🇩🇿','Austria':'🇦🇹','Curaçao':'🇨🇼','DR Congo':'🇨🇩','Democratic Republic of the Congo':'🇨🇩','Cape Verde':'🇨🇻','Haiti':'🇭🇹','Uzbekistan':'🇺🇿'};
 const TEAM_COLORS={'Argentina':'#75aadb','Brazil':'#009c3b','France':'#002395','England':'#cf081f','Germany':'#4a4a4a','Spain':'#c60b1e','Portugal':'#006600','Netherlands':'#ff6600','USA':'#3c3b6e','Mexico':'#006847','Japan':'#bc002d','Morocco':'#c1272d','Norway':'#ba0c2f','Sweden':'#006aa7','Austria':'#ed2939','Australia':'#00008b','Canada':'#ff0000','Colombia':'#fcd116','Czech Republic':'#11457e','Egypt':'#ce1126','Jordan':'#007a3d','Paraguay':'#d52b1e','Qatar':'#8d1b3d','South Korea':'#003478','Switzerland':'#ff0000','DR Congo':'#007fff','Bosnia & Herzegovina':'#002395','Bosnia and Herzegovina':'#002395','Ivory Coast':'#f77f00','Iran':'#239f40','Saudi Arabia':'#006c35','Scotland':'#003078','Croatia':'#ff0000','Ghana':'#006b3f','New Zealand':'#00247d','Panama':'#c8102e','Senegal':'#00853f','Tunisia':'#e70013','Turkey':'#e30a17','Uruguay':'#5bc2e7','Iraq':'#ce1126','South Africa':'#007749','Algeria':'#006233','Curaçao':'#002b7f','Cape Verde':'#003893','Haiti':'#00209f','Uzbekistan':'#1eb53a'};
@@ -312,14 +325,25 @@ function renderSchedule(){
 
   const grouped={};
   games.forEach(g=>{
-    const date=(g.local_date||'').split(' ')[0]||'Unknown';
+    const isUpcoming=(g.finished||'').toUpperCase()!=='TRUE'&&(g.time_elapsed||'').toLowerCase()!=='live';
+    let date;
+    if(isUpcoming){
+      const ct=toChinaTime(g.local_date);
+      date=ct.split(' ')[0]||'Unknown';
+    }else{
+      date=(g.local_date||'').split(' ')[0]||'Unknown';
+    }
     if(!grouped[date])grouped[date]=[];
     grouped[date].push(g);
   });
 
   const sortedDates=Object.keys(grouped).sort((a,b)=>{
     const da=a.split('/');const db=b.split('/');
-    return new Date(da[2],da[0]-1,da[1])-new Date(db[2],db[0]-1,db[1]);
+    const d1=new Date(da[2],da[0]-1,da[1]);
+    const d2=new Date(db[2],db[0]-1,db[1]);
+    if(scheduleFilter==='finished')return d2-d1;
+    if(scheduleFilter==='all')return d2-d1;
+    return d1-d2;
   });
 
   if(!sortedDates.length){fc.innerHTML=`<div class="message"><div class="icon">📅</div><h3>${currentLang==='zh'?'暂无比赛':'No matches'}</h3></div>`;return}
@@ -345,7 +369,7 @@ function renderSchedule(){
       const cityText=stadium?stadium.city:'';
       const groupLabel=g.group?`小组${g.group}`:'';
       const typeLabel=g.type==='knockout'?'淘汰赛':g.type==='final'?'决赛':'';
-      const score=isFinished||isLive?`${g.home_score || 0} - ${g.away_score || 0}`:time;
+      const score=isFinished||isLive?`${g.home_score || 0} - ${g.away_score || 0}`:toChinaTime(g.local_date).split(' ')[1]||time;
       const homeScorers=parseScorers(g.home_scorers);
       const awayScorers=parseScorers(g.away_scorers);
       let scorersHtml='';
