@@ -280,9 +280,6 @@ async function fetchAll(){
   const pl=Object.values(players).sort((a,b)=>b.goals-a.goals||b.penalties-a.penalties);
   return{players:pl,stats:{totalMatches:games.length,finishedMatches:finishedCount,totalGoals,totalScorers:pl.length}};
 }
-  const pl=Object.values(players).sort((a,b)=>b.goals-a.goals||b.penalties-a.penalties);
-  return{players:pl,stats:{totalMatches:games.length,finishedMatches:finishedCount,totalGoals,totalScorers:pl.length}};
-}
 
 function renderCards(list){
   const g=document.getElementById("grid");
