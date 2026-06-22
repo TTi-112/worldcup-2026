@@ -233,7 +233,7 @@ const EMBEDDED_DATA={"games":[{"_id":"679c9c8a5749c4077500e001","id":"1","home_t
 
 function parseScorers(s){if(!s||s==='null')return[];const r=[],c=s.replace(/[{}]/g,''),rx=/"([^"]+)"/g;let m;while((m=rx.exec(c))!==null){const sc=m[1],ip=sc.toLowerCase().includes('(p)'),io=sc.toLowerCase().includes('(og)');let n=sc.replace(/\s*\d+.*$/,'').replace(/\s*\(p\)\s*/gi,'').replace(/\s*\(og\)\s*/gi,'').trim();if(n&&!io)r.push({name:n,isPenalty:ip})}return r}
 
-async function fetchPlayerImage(name){if(imageCache[name]!==undefined)return imageCache[name];try{const sn=NAME_MAP[name]||name;const r=await fetch(`${THUMBS_API}${encodeURIComponent(sn)}`);if(r.status===429){imageCache[name]=null;return null}if(!r.ok){imageCache[name]=null;return null}const d=await r.json();const p=d.player||[];if(p.length>0){const u=p[0].strCutout||p[0].strThumb||null;imageCache[name]=u;return u}const pts=sn.split(' ');if(pts.length>1){await new Promise(r2=>setTimeout(r2,300));const r2=await fetch(`${THUMBS_API}${encodeURIComponent(pts[pts.length-1])}`);if(r2.ok){const d2=await r2.json();if(d2.player&&d2.player.length>0){const u=d2.player[0].strCutout||d2.player[0].strThumb||null;imageCache[name]=u;return u}}}imageCache[name]=null;return null}catch{imageCache[name]=null;return null}}
+async function fetchPlayerImage(name){if(imageCache[name]!==undefined)return imageCache[name];try{const sn=NAME_MAP[name]||name;const r=await fetch(`${THUMBS_API}${encodeURIComponent(sn)}`);if(r.status===429||!r.ok){imageCache[name]=null;return null}const d=await r.json();const p=d.player||[];if(p.length>0){const u=p[0].strCutout||p[0].strThumb||null;imageCache[name]=u;return u}imageCache[name]=null;return null}catch{imageCache[name]=null;return null}}
 
 let allPlayers=[],activeTeam="ALL",searchTerm="",groupsData=[],teamsMap={},stadiumsMap={},allGames=[],scheduleFilter="all";
 
@@ -451,7 +451,7 @@ async function loadData(){
     renderCards(players);renderGroups();renderSchedule();
     const now=new Date().toLocaleTimeString(currentLang==='zh'?'zh-CN':'en-US');
     document.getElementById('source-info').innerHTML=`<span class="live-dot"></span>${t('matches_done',{cur:stats.finishedMatches,total:stats.totalMatches})} · ${t('updated_at',{time:now})}`;
-    (async()=>{const top=players.slice(0,15);for(let i=0;i<top.length;i++){if(i>0)await new Promise(r=>setTimeout(r,200));await fetchPlayerImage(top[i].name)}renderCards(allPlayers)})();
+    (async()=>{const top=players.slice(0,5);for(let i=0;i<top.length;i++){if(i>0)await new Promise(r=>setTimeout(r,1500));await fetchPlayerImage(top[i].name)}renderCards(allPlayers)})();
   }catch(err){document.getElementById('source-info').innerHTML=`<span style="color:var(--red)">⚠</span> ${t('api_error')}: ${err.message}`}
 }
 
