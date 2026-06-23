@@ -111,6 +111,24 @@ a{color:var(--accent);text-decoration:none}
 .footer{text-align:center;padding:1.5rem 1rem;color:var(--text-muted);font-size:.75rem;border-top:1px solid #1a1a2e}
 .footer a{color:var(--accent)}
 
+.match-card{cursor:pointer}
+.match-card.expanded .pred-expand{display:block}
+.pred-expand{display:none;margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.08)}
+.pred-scores-row{display:flex;gap:.8rem;margin:.5rem 0;flex-wrap:wrap}
+.pred-score-box{background:rgba(255,255,255,.03);border-radius:8px;padding:.5rem .8rem;text-align:center;min-width:70px}
+.pred-score-box.top{border:2px solid var(--gold);background:rgba(255,215,0,.08)}
+.pred-score-val{font-size:1.1rem;font-weight:800;color:var(--accent)}
+.pred-score-box.top .pred-score-val{color:var(--gold)}
+.pred-score-prob{font-size:.7rem;color:var(--text-muted)}
+.pred-score-label{font-size:.6rem;color:var(--text-muted);text-transform:uppercase}
+.pred-rates{display:flex;gap:.3rem;margin:.4rem 0}
+.pred-rate-pill{padding:.2rem .5rem;border-radius:10px;font-size:.7rem;font-weight:600}
+.pred-rate-pill.win{background:rgba(76,175,80,.15);color:var(--green)}
+.pred-rate-pill.draw{background:rgba(255,215,0,.1);color:var(--gold)}
+.pred-rate-pill.lose{background:rgba(231,76,60,.1);color:var(--red)}
+.pred-analysis-text{font-size:.8rem;color:var(--text-muted);line-height:1.5;margin-top:.4rem}
+.pred-hot-badge{display:inline-block;background:rgba(231,76,60,.2);color:var(--red);padding:.1rem .4rem;border-radius:10px;font-size:.65rem;font-weight:600;margin-left:.3rem}
+.pred-click-hint{font-size:.65rem;color:var(--text-muted);text-align:right;margin-top:.2rem;opacity:.6}
 .pred-card{background:var(--surface);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;box-shadow:var(--shadow);border-left:4px solid var(--accent)}
 .pred-card.hot{border-left-color:var(--red)}
 .pred-match{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
@@ -151,7 +169,6 @@ a{color:var(--accent);text-decoration:none}
   <button class="tab-btn active" onclick="switchTab('players')" data-tab="players">⚽ <span data-i18n="tab_players">射手榜</span></button>
   <button class="tab-btn" onclick="switchTab('groups')" data-tab="groups">📊 <span data-i18n="tab_groups">积分榜</span></button>
   <button class="tab-btn" onclick="switchTab('schedule')" data-tab="schedule">📅 <span data-i18n="tab_schedule">赛程</span></button>
-  <button class="tab-btn" onclick="switchTab('predictions')" data-tab="predictions">🔮 <span data-i18n="tab_predictions">预测</span></button>
 </div>
 
 <div class="tab-content active" id="tab-players">
@@ -173,10 +190,7 @@ a{color:var(--accent);text-decoration:none}
 </div>
 
 <div class="tab-content" id="tab-schedule">
-<div class="tab-content" id="tab-predictions">
-  <h2 style="text-align:center;color:var(--accent);margin-bottom:1rem">🔮 <span data-i18n="pred_title">比赛预测</span></h2>
-  <div id="predictions-container"></div>
-</div>
+
   <div class="schedule-filter" id="schedule-filter"></div>
   <div id="schedule-container"></div>
 </div>
@@ -430,8 +444,12 @@ function renderSchedule(){
         const allScorers=[...homeScorers.map(s=>`${playerName(s.name)}${s.isPenalty?'(p)':''}`),...awayScorers.map(s=>`${playerName(s.name)}${s.isPenalty?'(p)':''}`)];
         scorersHtml=`<div class="match-scorers">⚽ ${allScorers.join(', ')}</div>`;
       }
+      let predHtml='';
+      if(!isFinished){const pred=PREDICTIONS.find(p=>p.home===g.home_team_name_en&&p.away===g.away_team_name_en);
+        if(pred){const hotBadge=pred.hot?`<span class="pred-hot-badge">🔥 ${pred.hotText}</span>`:'';
+          predHtml=`<div class="pred-expand"><div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.3rem">🔮 分析${hotBadge}</div><div class="pred-scores-row"><div class="pred-score-box top"><div class="pred-score-label">🥇 首选</div><div class="pred-score-val">${pred.score1}</div><div class="pred-score-prob">${pred.prob1}</div></div><div class="pred-score-box"><div class="pred-score-label">🥈 次选</div><div class="pred-score-val">${pred.score2}</div><div class="pred-score-prob">${pred.prob2}</div></div></div><div class="pred-rates"><span class="pred-rate-pill win">胜 ${pred.winRate}</span><span class="pred-rate-pill draw">平 ${pred.drawRate}</span><span class="pred-rate-pill lose">负 ${pred.loseRate}</span></div><div class="pred-analysis-text">${pred.analysis}</div></div>`}}
       
-      return`<div class="match-card ${statusClass}">
+      return`<div class="match-card ${statusClass}" onclick="togglePred(this)">
         <div class="match-row">
           <div class="match-team home"><span class="match-team-name">${homeName}</span><span class="match-team-flag">${homeFlag}</span></div>
           <div class="match-score">${score}</div>
@@ -441,7 +459,7 @@ function renderSchedule(){
           <div>${groupLabel?`<span class="match-group">${groupLabel}</span> `:''}${typeLabel?`<span class="match-group">${typeLabel}</span> `:''}<span class="match-status ${statusClass}">${statusText}</span></div>
           <div>${stadiumText?`<span class="match-venue">🏟️ ${stadiumText}${cityText?' · '+cityText:''}</span>`:''}</div>
         </div>
-        ${scorersHtml}
+        ${scorersHtml}${predHtml}${!isFinished?"<div class=\"pred-click-hint\">🔮 点击查看预测</div>":""}
       </div>`;
     }).join('');
 
@@ -466,8 +484,10 @@ function setLang(lang){
   document.getElementById('search').placeholder=t('search_placeholder');
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
   document.getElementById('footer').innerHTML=`${t('footer_data')}: <a href="https://worldcup26.ir" target="_blank">World Cup 2026 API</a> · ${t('footer_img')}: <a href="https://www.thesportsdb.com" target="_blank">TheSportsDB</a> · ${t('footer_update')}`
-  if(allPlayers.length){renderCards(currentFiltered());renderTeamFilters();renderGroups();renderSchedule();renderPredictions()}
+  if(allPlayers.length){renderCards(currentFiltered());renderTeamFilters();renderGroups();renderSchedule();}
 }
+
+function togglePred(el){el.classList.toggle("expanded")}
 
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
@@ -502,7 +522,7 @@ const PREDICTIONS=[
  analysis:"刚果(金)首轮1-1逼平葡萄牙，防守反击有实力。哥伦比亚首轮3-1大胜但面对有韧性的非洲球队不一定能轻松取胜。维萨反击有威胁。"}
 ];
 
-function renderPredictions(){
+function {
   const c=document.getElementById("predictions-container");
   if(!c)return;
   const flag=TEAM_FLAGS||{};
@@ -561,7 +581,7 @@ async function loadData(){
   try{
     const{players,stats}=await fetchAll();
     allPlayers=players;renderStats(stats);renderTeamFilters();
-    renderCards(players);renderGroups();renderSchedule();renderPredictions();
+    renderCards(players);renderGroups();renderSchedule();
     const now=new Date().toLocaleTimeString(currentLang==='zh'?'zh-CN':'en-US');
     document.getElementById('source-info').innerHTML=`<span class="live-dot"></span>${t('matches_done',{cur:stats.finishedMatches,total:stats.totalMatches})} · ${t('updated_at',{time:now})}`;
     renderCards(allPlayers);
