@@ -212,7 +212,7 @@ a{color:var(--accent);text-decoration:none}
 let currentLang='zh';
 const I18N={
   zh:{subtitle:'射手榜',tab_players:'射手榜',tab_groups:'积分榜',tab_schedule:'赛程',
-    tab_predictions:'预测',pred_title:'比赛预测',pred_score1:'首选',pred_score2:'次选',pred_analysis:'分析',pred_rate_win:'胜率',pred_rate_draw:'平率',pred_rate_lose:'负率',pred_hot:'冷门可能',pred_updated:'预测仅供参考，足球比赛充满不确定性'
+    tab_predictions:'预测',pred_title:'比赛预测',pred_score1:'首选',pred_score2:'次选',pred_analysis:'分析',pred_rate_win:'胜率',pred_rate_draw:'平率',pred_rate_lose:'负率',pred_hot:'冷门可能',pred_updated:'预测仅供参考，足球比赛充满不确定性',
     search_placeholder:'搜索球员或国家…',finished_matches:'已完成',total_matches:'总比赛',
     total_goals:'总进球',goal_scorers:'进球球员',goals:'进球',penalties:'点球',open_play:'运动战',
     pen_label:'含 {n} 粒点球',no_players:'没有找到球员',api_error:'API连接失败',
@@ -224,7 +224,7 @@ const I18N={
     venue:'球场',scorers:'进球',
   },
   en:{subtitle:'Top Scorers',tab_players:'Top Scorers',tab_groups:'Standings',tab_schedule:'Schedule',
-    tab_predictions:'Predictions',pred_title:'Match Predictions',pred_score1:'Top Pick',pred_score2:'Second Pick',pred_analysis:'Analysis',pred_rate_win:'Win',pred_rate_draw:'Draw',pred_rate_lose:'Loss',pred_hot:'Upset Alert',pred_updated:'Predictions are for reference only'
+    tab_predictions:'Predictions',pred_title:'Match Predictions',pred_score1:'Top Pick',pred_score2:'Second Pick',pred_analysis:'Analysis',pred_rate_win:'Win',pred_rate_draw:'Draw',pred_rate_lose:'Loss',pred_hot:'Upset Alert',pred_updated:'Predictions are for reference only',
     search_placeholder:'Search player or country…',finished_matches:'FINISHED',total_matches:'TOTAL',
     total_goals:'GOALS',goal_scorers:'SCORERS',goals:'Goals',penalties:'Pens',open_play:'Open Play',
     pen_label:'incl. {n} pen.',no_players:'No players found',api_error:'API connection failed',
@@ -278,6 +278,30 @@ const PLAYER_IMAGES={"Abdulelah Al-Amri":"https://r2.thesportsdb.com/images/medi
 function parseScorers(s){if(!s||s==='null')return[];const r=[],c=s.replace(/[{}]/g,''),rx=/"([^"]+)"/g;let m;while((m=rx.exec(c))!==null){const sc=m[1],ip=sc.toLowerCase().includes('(p)'),io=sc.toLowerCase().includes('(og)');let n=sc.replace(/\s*\d+.*$/,'').replace(/\s*\(p\)\s*/gi,'').replace(/\s*\(og\)\s*/gi,'').trim();if(n&&!io)r.push({name:n,isPenalty:ip})}return r}
 
 function getPlayerImage(name){return PLAYER_IMAGES[name]||null}
+
+
+const PREDICTIONS=[
+{home:"Portugal",away:"Uzbekistan",group:"K",date:"06-24 01:00",stadium:5,
+ score1:"2-0",prob1:"28%",score2:"3-0",prob2:"22%",
+ winRate:"88%",drawRate:"8%",loseRate:"4%",
+ hot:false,hotText:"",
+ analysis:"葡萄牙首轮1-1被刚果(金)逼平后反弹。乌兹别克斯坦首轮丢3球，防守薄弱。"},
+{home:"England",away:"Ghana",group:"L",date:"06-24 04:00",stadium:9,
+ score1:"1-0",prob1:"18%",score2:"1-1",prob2:"16%",
+ winRate:"75%",drawRate:"16%",loseRate:"9%",
+ hot:true,hotText:"加纳首轮零封，防守极稳",
+ analysis:"加纳首轮零封对手，防守极其稳固。英格兰进攻豪华但面对非洲铁桶阵不一定能轻松破门。"},
+{home:"Panama",away:"Croatia",group:"L",date:"06-24 07:00",stadium:12,
+ score1:"0-1",prob1:"20%",score2:"0-0",prob2:"18%",
+ winRate:"15%",drawRate:"25%",loseRate:"60%",
+ hot:false,hotText:"",
+ analysis:"克罗地亚首轮丢4球士气低落但底蕴在。巴拿马首轮零进球攻击力差。"},
+{home:"Colombia",away:"Democratic Republic of the Congo",group:"K",date:"06-24 10:00",stadium:2,
+ score1:"1-0",prob1:"19%",score2:"1-1",prob2:"17%",
+ winRate:"65%",drawRate:"20%",loseRate:"15%",
+ hot:true,hotText:"刚果(金)首轮逼平葡萄牙",
+ analysis:"刚果(金)首轮1-1逼平葡萄牙，防守反击有实力。哥伦比亚首轮3-1大胜但面对有韧性的非洲球队不一定能轻松取胜。"}
+];
 
 let allPlayers=[],activeTeam="ALL",searchTerm="",groupsData=[],teamsMap={},stadiumsMap={},allGames=[],scheduleFilter="all";
 
@@ -499,82 +523,6 @@ document.getElementById("team-filters").addEventListener("click",e=>{if(!e.targe
 document.getElementById("search").addEventListener("input",e=>{searchTerm=e.target.value.trim();renderCards(currentFiltered())});
 
 
-const PREDICTIONS=[
-{home:"Portugal",away:"Uzbekistan",group:"K",date:"06-24 01:00",stadium:5,
- score1:"2-0",prob1:"28%",score2:"3-0",prob2:"22%",
- winRate:"88%",drawRate:"8%",loseRate:"4%",
- hot:false,hotText:"",
- analysis:"葡萄牙首轮1-1被刚果(金)逼平后反弹。乌兹别克斯坦首轮丢3球，防守薄弱。C罗等巨星需要证明自己，进攻端会爆发。"},
-{home:"England",away:"Ghana",group:"L",date:"06-24 04:00",stadium:9,
- score1:"1-0",prob1:"18%",score2:"1-1",prob2:"16%",
- winRate:"75%",drawRate:"16%",loseRate:"9%",
- hot:true,hotText:"加纳首轮零封，防守极稳",
- analysis:"本日最大冷门候选！加纳首轮零封对手，防守极其稳固。英格兰进攻豪华但面对非洲铁桶阵不一定能轻松破门。凯恩1球定胜负或被逼平。"},
-{home:"Panama",away:"Croatia",group:"L",date:"06-24 07:00",stadium:12,
- score1:"0-1",prob1:"20%",score2:"0-0",prob2:"18%",
- winRate:"15%",drawRate:"25%",loseRate:"60%",
- hot:false,hotText:"",
- analysis:"克罗地亚首轮丢4球士气低落但底蕴在。巴拿马首轮零进球攻击力差。穆萨或巴图里纳1球小胜，或双方沉闷0-0。"},
-{home:"Colombia",away:"Democratic Republic of the Congo",group:"K",date:"06-24 10:00",stadium:2,
- score1:"1-0",prob1:"19%",score2:"1-1",prob2:"17%",
- winRate:"65%",drawRate:"20%",loseRate:"15%",
- hot:true,hotText:"刚果(金)首轮逼平葡萄牙",
- analysis:"刚果(金)首轮1-1逼平葡萄牙，防守反击有实力。哥伦比亚首轮3-1大胜但面对有韧性的非洲球队不一定能轻松取胜。维萨反击有威胁。"}
-];
-
-function {
-  const c=document.getElementById("predictions-container");
-  if(!c)return;
-  const flag=TEAM_FLAGS||{};
-  const tCN=TEAM_CN||{};
-  const tn=(en)=>currentLang==='zh'?(tCN[en]||en):en;
-  
-  // Get current time to determine which predictions are still relevant
-  const now=new Date();
-  
-  c.innerHTML=PREDICTIONS.map(p=>{
-    const homeFlag=flag[p.home]||'⚽';
-    const awayFlag=flag[p.away]||'⚽';
-    const homeName=tn(p.home);
-    const awayName=tn(p.away);
-    const hotClass=p.hot?'hot':'';
-    const hotBadge=p.hot?`<span class="pred-hot">🔥 ${t('pred_hot')}: ${p.hotText}</span>`:'';
-    
-    return`<div class="pred-card ${hotClass}">
-      <div class="pred-match">
-        <div>
-          <span class="pred-group">小组${p.group}</span>
-          <span class="pred-time" style="margin-left:.5rem">📅 ${p.date}</span>
-        </div>
-      </div>
-      <div class="pred-teams">
-        <span>${homeFlag} ${homeName}</span>
-        <span style="color:var(--text-muted);margin:0 .3rem">vs</span>
-        <span>${awayName} ${awayFlag}</span>
-      </div>
-      ${hotBadge}
-      <div class="pred-scores">
-        <div class="pred-score-box top">
-          <div class="pred-label">🥇 ${t('pred_score1')}</div>
-          <div class="pred-score">${p.score1}</div>
-          <div class="pred-prob">${p.prob1}</div>
-        </div>
-        <div class="pred-score-box">
-          <div class="pred-label">🥈 ${t('pred_score2')}</div>
-          <div class="pred-score">${p.score2}</div>
-          <div class="pred-prob">${p.prob2}</div>
-        </div>
-      </div>
-      <div class="pred-rate">
-        <div class="pred-rate-item w">${t('pred_rate_win')}: ${p.winRate}</div>
-        <div class="pred-rate-item d">${t('pred_rate_draw')}: ${p.drawRate}</div>
-        <div class="pred-rate-item l">${t('pred_rate_lose')}: ${p.loseRate}</div>
-      </div>
-      <div class="pred-analysis"><strong>${t('pred_analysis')}：</strong>${p.analysis}</div>
-    </div>`;
-  }).join('')+
-  `<div class="pred-updated">⚠️ ${t('pred_updated')}</div>`;
-}
 
 let refreshTimer=null;
 async function loadData(){
